@@ -1,10 +1,11 @@
 import pickle
 import numpy as np
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 # Define the data model for incoming loan applications
-class LoanApplication(BaseModel):
+class LoanApplication(BaseModel): 
     no_of_dependents: int
     education: int         # 1 for Graduate, 0 for Not Graduate
     self_employed: int     # 1 for Yes, 0 for No
@@ -19,6 +20,15 @@ class LoanApplication(BaseModel):
 
 # Initialize the FastAPI app
 app = FastAPI()
+
+# Enable CORS middleware to allow requests from any origin (for development).
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, restrict this to specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Load the trained model when the API starts
 try:
@@ -38,7 +48,7 @@ def predict(application: LoanApplication):
         raise HTTPException(status_code=500, detail="Model not loaded")
     try:
         # Convert input data into the correct format for prediction
-        data = np.array([[
+        data = np.array([[ 
             application.no_of_dependents,
             application.education,
             application.self_employed,
